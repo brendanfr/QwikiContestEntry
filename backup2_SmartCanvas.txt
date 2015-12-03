@@ -1,0 +1,237 @@
+package com.wilsonstheorem.qwiki;
+
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Random;
+
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+public class SmartCanvas extends JPanel {
+	public Graphics2D g2;
+	public SmartCanvas(String[] fileNames,int width, int height){
+		this.width=width;
+		this.height=height;
+		images = new ArrayList<CanvasImage>();
+		Random r = new Random();
+//((double)i)/fileNames.length
+		for(int i=0;i<fileNames.length;i++){
+			images.add(new CanvasImage(fileNames[i], 50+r.nextInt(100), 40+r.nextInt(80), (double)i, i==0, 10));
+			
+		}
+	}
+	public int width;
+	public int height;
+	public ArrayList<CanvasImage> images;
+	
+    public void redraw()
+    {
+    	
+    }
+
+    public void paintComponent(Graphics g){ // @Override
+    	g2 = (Graphics2D)g;
+    	g2.drawRect(0, 0, width, height);
+    	//Comparator<CanvasImage> comparator = Collections.reverseOrder();
+    	Collections.sort(images);
+    //	boolean progress = false;
+    	//do{
+    		//progress=false;
+	    	//for(int i=images.size()-1;i>=0;i--){
+    	for(int i=0;i<images.size();i++){
+    		//System.out.println("height:"+images.get(i).getImage().getHeight());
+    		//for(int i=2;i<3;i++){
+    		//int i=3;
+	    		rearrange(i);
+	    		//progress=rearrange(i) || progress;
+    		/*
+    		rearrange(3);
+    		rearrange(2);
+    		rearrange(1);
+    		*/
+				//g2.drawImage(images[i].getImage(), 50*i, 40*i,null); 
+	    		
+			}
+    	//}while(progress);
+    	render(g2);
+    }
+    
+    public void render(Graphics2D g2){
+    	for(int i=0;i<images.size();i++){
+    		g2.drawImage(images.get(i).getImage(), images.get(i).getX(), images.get(i).getY(),images.get(i).getWidth(),images.get(i).getHeight(),null); 
+    		
+    	}
+    }
+    
+
+    
+    //  ix of the current image to try to resize
+	public boolean rearrange(int ix){
+		System.out.println("In rearrange");
+		boolean success = true;
+		boolean progress = false;
+		// These parameters can be useful for more optimized incrementation later
+		// TODO Assuming can be at least slightly scaled up...
+		boolean test=bookArrange(); // Assuming this can be done
+		System.out.println("TESTTTT:"+test);
+		
+		if(images.get(ix).isActive()){
+			while(success){
+			//while(success && images.get(ix).getWidth()<width && images.get(ix).getHeight()<height){
+				System.out.println("Active");
+				
+				success = bookArrange(); 
+				
+					images.get(ix).incWidth();
+			    	images.get(ix).incHeight();
+				
+				
+				progress = progress || success;
+			}
+			images.get(ix).decWidth();
+			images.get(ix).decHeight();
+			
+			images.get(ix).decWidth();
+			images.get(ix).decHeight();
+			images.get(ix).decWidth();
+			images.get(ix).decHeight();
+		}
+		else{
+		
+			while(success){
+		//while(success && images.get(ix).getWidth()<width){
+			System.out.println("Not active");
+			// Be efficient - if 
+			success = bookArrange();   
+			images.get(ix).incWidth();
+			progress = progress || success;
+		}
+			 // IS this messing up resize for other images?
+			images.get(ix).decWidth();
+			images.get(ix).decWidth();
+			images.get(ix).decWidth();
+		success=true;
+
+		// todo-while loop should only depend on success
+		while(success){
+		//while(success && images.get(ix).getHeight()<height){
+			System.out.println("1/2 arrange session");
+
+			success = bookArrange();   
+	    	images.get(ix).incHeight();
+			progress = progress || success;
+		}
+		images.get(ix).decHeight();
+		images.get(ix).decHeight();
+		
+		// While loop exiting implied failed bookArrange
+		}
+		System.out.println("Finished an arrange session");
+		
+		return progress;
+	}
+	
+	// Given current dimensions of each image, try to increase 
+    public boolean pocketArrange(int ix, int inc){
+		return true;
+	}
+
+    public boolean magnetArrange(int ix){
+    	return true;
+    }
+    
+    // A simplistic arrangement pattern for now...
+    public boolean rightDownArrange(int ix, int dx, int dy){
+    	int xmax=0;
+    	int ymax=0;
+    	/*
+    	for(int i=0;i<images.size();i++){
+    		while(collides(i)){
+    			
+    		}
+    	}*/
+    	return true;
+    }
+    
+    // What is idx for?
+    public boolean bookArrange(){
+    	int xmax=images.get(0).getWidth()-1; // Right edge
+    	int ymax=images.get(0).getHeight()-1;
+    	// Why is ymax changing after looked at?
+    	System.out.println("ymax="+ymax);
+    	// TODO This is why only first image gets resized
+    	
+    	if(ymax>=height)return false;
+		if(xmax>=width)return false;
+		
+    	//if(ymax>=height)images.get(0).
+    	int yline=0; // y coordinate that use to place new images
+    	// Redundant to do this every time
+    	//images.get(ix).setX(0);
+    	//images.get(ix).setY(0);
+    	images.get(0).setX(0);
+    	images.get(0).setY(0);
+    	int row=0; // A counter for the current row
+    	for(int i=1;i<images.size();i++){
+    		System.out.println("Made it!");
+    		// If no more room in current row, start a new row
+    		if(xmax+1+images.get(i).getWidth()>=width){
+    			row++;
+    			images.get(i).setX(0);
+    			// Place images that are below active image RIGHT BELOW active image
+    			if(row==1 && images.get(i).getWidth()<images.get(0).getWidth()){
+    				images.get(i).setY(images.get(0).getHeight());
+    				yline=ymax+1;
+    				// Note that ymax must be treated differently when image is moved close to active image
+        			ymax=Math.max(images.get(0).getHeight()+images.get(i).getHeight()-1,ymax);
+    			}
+    			else{
+    				images.get(i).setY(ymax+1);
+    				yline=ymax+1;
+        			ymax+=images.get(i).getHeight();
+    			}
+    			
+    			xmax=images.get(i).getWidth()-1;
+    		}
+    		else{
+    			if(row==1 && xmax+images.get(i).getWidth()<images.get(0).getWidth()){
+    				images.get(i).setY(images.get(0).getHeight());
+    				ymax=Math.max(ymax,images.get(0).getHeight()+images.get(i).getHeight()+1);
+    			}
+    			else{
+    				images.get(i).setY(yline);
+    				ymax=Math.max(ymax,yline+images.get(i).getHeight());	
+    			}
+    			images.get(i).setX(xmax+1);
+    			
+    			
+    			xmax+=images.get(i).getWidth();
+    		}
+    		if(ymax>=height)return false;
+    		if(xmax>=width)return false;
+    	}
+    	
+    	return true;
+    }
+    
+    // Whether the image at given ix fits given that dimensions of images 0...ix-1 have been determined
+    public boolean collides(int ix){
+    	return true;
+    }
+    
+    public void grow(int dx, int dy){
+    	// TODO Pass by reference lol?
+    	// This is just a basic grow function for now; I know it looks dumb
+    	if(dx==1){
+    		dx=0;
+    		dy=1;
+    	}
+    	else{
+    		dx=1;
+    		dy=0;
+    	}
+    }
+}
