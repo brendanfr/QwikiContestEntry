@@ -1,1 +1,1 @@
-# Project in college whipped up in a day for a contest sponsored by Qwiki.  One was supposed to allow the user to switch focus between images in a beautiful animated fashion.
+# Project in college whipped up in a day for a contest sponsored by Qwiki.  One was supposed to allow the user to switch focus between images in a beautiful animated fashion, such that the images fit into a rectangle (taking up all of the space in the rectangle), and the focused image becomes the largest.
